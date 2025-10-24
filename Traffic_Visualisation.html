@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Traffic Incident Analysis - Vega-Lite</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
+    h1 { text-align: center; color: #222; }
+    h2 { color: #444; margin-top: 50px; }
+    .chart { margin: 40px auto; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Traffic Incident Analysis (Dubai Emirate)</h1>
+
+  <h2>1. Accident Distribution by Day of the Week</h2>
+  <div id="dayOfWeek"></div>
+
+  <h2>2. Accident Distribution by Hour of the Day</h2>
+  <div id="hourOfDay"></div>
+
+  <h2>3. Map of Accident Density Across Dubai</h2>
+  <div id="map"></div>
+
+  <script>
+    const dataUrl = "https://raw.githubusercontent.com/sheriefAbdallah/CS318/refs/heads/main/Traffic_Incidents.csv";
+
+    // Task 1: Bar chart (Accidents by Day of Week)
+    const dayChart = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "data": {
+        "url": dataUrl,
+        "format": {"type": "csv", "parse": {"acci_time": "%d/%m/%Y %H:%M:%S"}}
+      },
+      "transform": [
+        {"calculate": "day(datum.acci_time)", "as": "day_of_week"}
+      ],
+      "mark": "bar",
+      "encoding": {
+        "x": {
+          "field": "day_of_week",
+          "type": "ordinal",
+          "title": "Day of the Week",
+          "sort": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        },
+        "y": {"aggregate": "count", "title": "Number of Accidents"},
+        "color": {"field": "day_of_week", "type": "nominal", "title": "Day"}
+      },
+      "width": 600,
+      "height": 400
+    };
+
+    // Task 2: Line chart (Accidents by Hour)
+    const hourChart = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "data": {
+        "url": dataUrl,
+        "format": {"type": "csv", "parse": {"acci_time": "%d/%m/%Y %H:%M:%S"}}
+      },
+      "transform": [
+        {"calculate": "hours(datum.acci_time)", "as": "hour"},
+        {"calculate": "day(datum.acci_time)", "as": "day_of_week"}
+      ],
+      "mark": {"type": "line", "point": true},
+      "encoding": {
+        "x": {"field": "hour", "type": "ordinal", "title": "Hour of Day"},
+        "y": {"aggregate": "count", "title": "Number of Accidents"},
+        "color": {"field": "day_of_week", "type": "nominal", "title": "Day"}
+      },
+      "width": 600,
+      "height": 400
+    };
+
+    // Task 3: Map (Accident Density)
+    const mapChart = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "description": "Accident Density Map",
+      "data": {
+        "url": dataUrl,
+        "format": {"type": "csv"}
+      },
+      "transform": [
+        {"filter": "datum.acci_y > 23"}
+      ],
+      "mark": {"type": "circle", "opacity": 0.2, "color": "#0077b6"},
+      "encoding": {
+        "longitude": {"field": "acci_y", "type": "quantitative", "title": "Longitude"},
+        "latitude": {"field": "acci_x", "type": "quantitative", "title": "Latitude"}
+      },
+      "width": 600,
+      "height": 400
+    };
+
+    // Embed all three charts
+    vegaEmbed("#dayOfWeek", dayChart);
+    vegaEmbed("#hourOfDay", hourChart);
+    vegaEmbed("#map", mapChart);
+  </script>
+</body>
+</html>
